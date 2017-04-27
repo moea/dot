@@ -5,7 +5,7 @@
 
 (defun moea--forward-delete-whitespace (arg)
   (interactive "P")
-  (let ((regexp (if arg "[ \t\n]+" "[ \t]+")))
+  (let ((regexp "[ \t]+"))
     (re-search-forward regexp nil t)
     (replace-match "" nil nil)))
 

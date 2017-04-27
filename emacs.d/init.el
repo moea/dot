@@ -31,14 +31,21 @@
 (defvar moea--misc-map (make-sparse-keymap))
 (define-key global-map (kbd "C-q") moea--misc-map)
 
-(setq kill-buffer-query-functions
-      (remq 'process-kill-buffer-query-function
-            kill-buffer-query-functions))
+(defun moea--no-process-kill-prompt ()
+  (setq kill-buffer-query-functions
+        (remq 'process-kill-buffer-query-function
+              kill-buffer-query-functions)))
 
 (setq-default fill-column               80
               sentence-end-double-space t
               column-number-mode        t
               indent-tabs-mode          nil)
+
+(defun moea--setup-sh-mode ()
+  (setq sh-basic-offset 2
+        sh-indentation  2))
+
+(add-hook 'sh-mode-hook 'moea--setup-sh-mode)
 
 (setq kill-whole-line             t
       revert-without-query       '(".*")
@@ -58,8 +65,6 @@
 (define-key moea--misc-map (kbd "r")        'moea--rename-file-and-buffer)
 (define-key moea--misc-map (kbd "<delete>") 'moea--delete-this-buffer-and-file)
 (define-key moea--misc-map (kbd "DEL")      'moea--delete-this-buffer-and-file)
-
-(add-hook 'before-save-hook 'moea--indent-buffer)
 
 (defadvice move-beginning-of-line (around smarter-bol activate)
   ;; Move to requested line if needed.
@@ -88,7 +93,7 @@
 
 (use-package whitespace
   :init
-  (setq whitespace-style '(face trailing tab-mark lines-tail))
+  (setq whitespace-style '(face trailing tab-mark lines-tail empty))
   (add-hook 'before-save-hook 'whitespace-cleanup)
   :diminish whitespace-mode
   :config   (global-whitespace-mode 1))
@@ -115,14 +120,17 @@
   (setq clojure-indent-style            :always-align
         clojure-use-backtracking-indent t)
   :config
-  (dolist (sym '(assoc into branch bind then go-catching fdef))
+  (dolist (sym '(assoc assoc-when into branch bind then go-catching fdef for-all* for-all alet for-map catch))
     (put-clojure-indent sym :defn)))
+
+(use-package yaml-mode :ensure t
+  :mode ("\\.yml\\'" . yaml-mode))
 
 (use-package cider :ensure t
   :bind (("C-M-e" . cider-visit-error-buffer))
   :init
   (setq cider-repl-history-size          100000
-        cider-repl-history-file          "cider-repl.history"
+        cider-repl-history-file          "~/.emacs.d/cider-repl.history"
         cider-auto-select-error-buffer   nil
         cider-repl-use-pretty-printing   t
         cider-show-error-buffer          nil
@@ -131,17 +139,18 @@
         cider-repl-use-clojure-font-lock t
         cider-auto-select-test-report-buffer nil
         cider-repl-display-in-current-window nil
-        cider-annotate-completion-candidates t)
+        cider-annotate-completion-candidates t
+        cider-repl-display-help-banner       nil)
   :config
+  (moea--no-process-kill-prompt)
   (use-package ac-cider :ensure t
     :init
     (add-hook 'cider-mode-hook 'ac-flyspell-workaround)
     (add-hook 'cider-mode-hook 'ac-cider-setup)
     (add-hook 'cider-repl-mode-hook 'ac-cider-setup)
-    (eval-after-load "auto-complete"
-      '(progn
-         (add-to-list 'ac-modes 'cider-mode)
-         (add-to-list 'ac-modes 'cider-repl-mode)))
+
+    (add-to-list 'ac-modes 'cider-mode)
+    (add-to-list 'ac-modes 'cider-repl-mode)
 
     (defun set-auto-complete-as-completion-at-point-function ()
       (setq completion-at-point-functions '(auto-complete)))
@@ -195,6 +204,9 @@
          ("C-M-n" . moea--paredit-forward-up)
          ("C-M-p" . moea--paredit-backward-down)))
 
+(use-package dockerfile-mode :ensure t
+  :mode ("\\'Dockerfile" . dockerfile-mode))
+
 (use-package paren :config (show-paren-mode))
 (use-package hl-line :config (global-hl-line-mode))
 
@@ -212,3 +224,4 @@
   :commands (gfm-mode)
   :mode     (("\\.md\\'" . gfm-mode))
   :init     (setq markdown-command "multimarkdown"))
+(put 'downcase-region 'disabled nil)
