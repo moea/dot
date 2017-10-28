@@ -167,6 +167,8 @@
     :ensure t
     :config (ido-yes-or-no-mode)))
 
+(global-set-key (kbd "M-q") 'fill-region)
+
 (use-package helm :ensure t
   :diminish helm-mode
   :bind     (("C-c h m" . helm-global-mark-ring)
@@ -191,6 +193,7 @@
 
 (when (boundp 'exec-path-from-shell-variables)
   (use-package exec-path-from-shell :ensure t
+    :config
     (when (memq window-system '(mac ns))
       (exec-path-from-shell-initialize))))
 
@@ -199,8 +202,8 @@
   (add-hook 'clojure-mode-hook    'paredit-mode)
   (add-hook 'cider-repl-mode-hook 'paredit-mode)
   (add-hook 'emacs-lisp-mode-hook 'paredit-mode)
-  :bind (("M-q"   . live-paredit-reindent-defun)
-         :map paredit-mode-map
+  :bind (:map paredit-mode-map
+         ("M-q"   . live-paredit-reindent-defun)
          ("C-M-n" . moea--paredit-forward-up)
          ("C-M-p" . moea--paredit-backward-down)))
 
@@ -224,4 +227,5 @@
   :commands (gfm-mode)
   :mode     (("\\.md\\'" . gfm-mode))
   :init     (setq markdown-command "multimarkdown"))
+
 (put 'downcase-region 'disabled nil)
