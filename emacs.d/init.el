@@ -67,7 +67,6 @@
 (define-key moea--misc-map (kbd "DEL")      'moea--delete-this-buffer-and-file)
 
 (defadvice move-beginning-of-line (around smarter-bol activate)
-  ;; Move to requested line if needed.
   (let ((arg (or (ad-get-arg 0) 1)))
     (when (/= arg 1)
       (forward-line (1- arg))))

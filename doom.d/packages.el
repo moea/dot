@@ -5,3 +5,4 @@
 (package! cider)
 (package! paredit)
 (package! iedit)
+(package! helm-ag)

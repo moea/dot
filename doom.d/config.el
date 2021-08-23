@@ -19,6 +19,18 @@
 
 (load! "util/advice.el")
 (load! "util/buffer-file.el")
+(load! "util/paredit.el")
+
+;; this is included by fiat, we don't want it. it's already loaded, we're just
+;; using use-package! for grouping configuration
+(use-package! rainbow-delimiters
+  :config
+  (remove-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+
+;; same with this
+(use-package! smartparens
+  :config
+  (remove-hook 'doom-first-buffer-hook #'smartparens-global-mode))
 
 (use-package! windmove
   :config (windmove-default-keybindings))
@@ -29,30 +41,21 @@
            ("C-M-;" . +company/complete))
   :config (define-key company-mode-map (kbd "C-;") nil))
 
-(use-package! paredit                   ;
+(use-package! projectile!
+  :init   (setq projectile-project-search-path '("~/p/"))
+  :bind   ("C-p" . projectile-command-map)
+  :config (projectile-mode t))
+
+(use-package! paredit
   :init
   (add-hook 'clojure-mode-hook    'paredit-mode)
   (add-hook 'cider-repl-mode-hook 'paredit-mode)
-  (add-hook 'emacs-lisp-mode-hook 'paredit-mode))
-
-;; this is included by fiat, we don't want it. it's already loaded, we're just
-;; using use-package! for grouping configuration
-(use-package! rainbow-delimiters
-  :config
-  (remove-hook 'prog-mode-hook   #'rainbow-delimiters-mode)
-  (remove-hook 'clojure-mode-hook #'rainbow-delimiters-mode))
-
-;; same with this
-(use-package! smartparens
-  :config
-  (remove-hook 'emacs-lisp-mode-hook #'smartparens-mode)
-  (remove-hook 'clojure-mode-hook    #'smartparens-mode))
-
-  ;; :bind (:map paredit-mode-map
-  ;;        ("M-q"   . live-paredit-reindent-defun)
-  ;;        ("C-M-n" . moea--paredit-forward-up)
-  ;;        ("C-M-p" . moea--paredit-backward-down))
-
+  (add-hook 'emacs-lisp-mode-hook 'paredit-mode)
+  :bind (:map paredit-mode-map
+         ("C-M-<up>"   . moe/paredit-toplevel)
+         ("C-M-<down>" . moe/paredit-toplevel-end)
+         ("C-M-f"      . moe/live-paredit-forward)
+         ("C-)"        . moe/live-paredit-forward-slurp-sexp-neatly)))
 
 (use-package! lookup
   ;; overrides downcase-word
@@ -82,7 +85,6 @@
 (map! "C-x k" 'moe/kill-save-buffer
       "M-SPC" 'moe/forward-delete-whitespace)
 
-(global-unset-key (kbd "C-q"))
 (defvar moe/misc-map (make-sparse-keymap))
 (define-key global-map (kbd "C-q") moe/misc-map)
 
@@ -102,5 +104,21 @@
     ("k" moea/hydra/win-kill/body   "Kill"   :exit t)
     ("c" moea/hydra/win-create/body "Create" :exit t)
     ("s" moea/hydra/win-swap/body   "Swap"   :exit t))
-;; overrides append-next-kill
+  ;; overrides append-next-kill
   :bind (("C-M-w" . 'moe/hydra/win/body)))
+
+(use-package! helm
+  :bind (("C-c h o" . helm-occur)
+         :map helm-map
+         ("<right>" . helm-ff-RET)))
+
+(use-package! clojure-mode
+  :mode (("\\.edn$" . clojure-mode))
+  :init
+  (setq clojure-indent-style            :always-align
+        clojure-use-backtracking-indent t)
+  :config
+  (dolist (sym '(assoc assoc-when into branch fdef for-all for-map catch))
+    (put-clojure-indent sym :defn)))
+
+(use-package! cider)

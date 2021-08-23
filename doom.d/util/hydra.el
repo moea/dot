@@ -56,4 +56,4 @@
                (windmove-swap-states-down))  "Down"  :exit t)
   ("<up>"     (lambda ()
                 (interactive)
-                (windmove-swap-stats-up))     "Up"   :exit t))
+                (windmove-swap-states-up))    "Up"   :exit t))
