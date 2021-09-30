@@ -1,4 +1,4 @@
-;;; $DOOMDIR/config.el -*- lexical-bindking: t; -*-
+;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
 (setq kill-whole-line                    t
       revert-without-query               '(".*")
@@ -7,9 +7,13 @@
       mode-require-final-newline         t
       confirm-nonexistent-file-or-buffer nil
       confirm-kill-emacs                 nil
+      confirm-kill-processes             nil
       user-full-name                     "Moe Aboulkheir"
       user-mail-address                  "moe.aboulkheir@gmail.com"
-      doom-theme                         'ouch)
+      doom-theme                         'ouch
+      moe/kill-save-buffer-delete-window nil
+      kill-buffer-query-functions        (delq 'process-kill-buffer-query-function
+                                               kill-buffer-query-functions))
 
 (dolist (mode '(menu-bar-mode tool-bar-mode scroll-bar-mode))
   (when (fboundp mode)
@@ -35,16 +39,13 @@
 (use-package! windmove
   :config (windmove-default-keybindings))
 
-;; avoid conflicts with iedit binding
-(use-package! company
-  :bind   (:map company-mode-map
-           ("C-M-;" . +company/complete))
-  :config (define-key company-mode-map (kbd "C-;") nil))
-
-(use-package! projectile!
+(use-package! projectile
   :init   (setq projectile-project-search-path '("~/p/"))
   :bind   ("C-p" . projectile-command-map)
   :config (projectile-mode t))
+
+(use-package iedit
+  :bind ("C-M-;" . iedit-mode))
 
 (use-package! paredit
   :init
@@ -55,7 +56,9 @@
          ("C-M-<up>"   . moe/paredit-toplevel)
          ("C-M-<down>" . moe/paredit-toplevel-end)
          ("C-M-f"      . moe/live-paredit-forward)
-         ("C-)"        . moe/live-paredit-forward-slurp-sexp-neatly)))
+         ("C-)"        . moe/live-paredit-forward-slurp-sexp-neatly)
+         ("M-{"        . paredit-wrap-curly)
+         ("M-["        . paredit-wrap-square)))
 
 (use-package! lookup
   ;; overrides downcase-word
@@ -93,7 +96,9 @@
  "i"        'moe/indent-buffer
  "r"        'moe/rename-file-and-buffer
  "<delete>" 'moe/delete-file-and-buffer
- "DEL"      'moe/delete-file-and-buffer)
+ "DEL"      'moe/delete-file-and-buffer
+ "u"        'revert-buffer
+ "["        'lsp-clojure-cycle-coll)
 
 (use-package! hydra
   :init
@@ -107,10 +112,14 @@
   ;; overrides append-next-kill
   :bind (("C-M-w" . 'moe/hydra/win/body)))
 
+(defun moe/insert-hash ()
+  (interactive)
+  (insert-char ?#))
+
+(bind-key "M-3" 'moe/insert-hash)
+
 (use-package! helm
-  :bind (("C-c h o" . helm-occur)
-         :map helm-map
-         ("<right>" . helm-ff-RET)))
+  :bind (("C-c h o" . helm-occur)))
 
 (use-package! clojure-mode
   :mode (("\\.edn$" . clojure-mode))
@@ -118,7 +127,15 @@
   (setq clojure-indent-style            :always-align
         clojure-use-backtracking-indent t)
   :config
-  (dolist (sym '(assoc assoc-when into branch fdef for-all for-map catch))
+  (dolist (sym '(assoc assoc-when into branch fdef for-all for-all* for-map catch))
     (put-clojure-indent sym :defn)))
 
-(use-package! cider)
+(use-package! cider
+  :init (setq cider-auto-select-error-buffer nil
+              cider-show-error-buffer        nil))
+
+(use-package! typescript-mode
+  :init (setq typescript-indent-level 2))
+
+(use-package web-mode
+  :init (setq web-mode-code-indent-offset 2))

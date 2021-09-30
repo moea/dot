@@ -2,7 +2,7 @@ export ZSH=~/.oh-my-zsh
 
 ZSH_THEME="robbyrussell"
 
-plugins=(git gpg-agent lein history-substring-search zsh-syntax-highlighting zsh-completions)
+plugins=(git gpg-agent lein history-substring-search)
 
 autoload -U compinit && compinit
 
@@ -17,3 +17,5 @@ alias grep='grep --color=always'
 
 export LESS='-R'
 export LESSOPEN='|~/bin/lessfilter %s'
+export PATH="$HOME/bin:$HOME/.emacs.d/bin:$PATH"
+export EDITOR=emacsclient

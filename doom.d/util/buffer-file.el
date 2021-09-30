@@ -1,5 +1,3 @@
-;;; util/global.el -*- lexical-binding: t; -*-
-
 (defvar moe/kill-save-buffer-delete-window t
   "*Delete window when `kill-save-buffer' is used.
 If this is non-nil, then `kill-save-buffer' will also delete the corresponding
@@ -7,12 +5,13 @@ windows.  This is inverted by `kill-save-buffer' when called with a prefix.")
 
 (defun moe/kill-save-buffer (arg)
   "Save the current buffer (if needed) and then kill it.
-Also, delete its windows according to `kill-save-buffer-delete-windows'.
+Also, delete its windows according to `moe/kill-save-buffer-delete-windows'.
 A prefix argument ARG reverses this behavior."
   (interactive "P")
   (let ((del moe/kill-save-buffer-delete-window))
     (when arg (setq del (not del)))
     (when (and (buffer-file-name)
+               (not buffer-read-only)
                (not (file-directory-p (buffer-file-name)))
                (< 0 (buffer-size (current-buffer))))
       (save-buffer))

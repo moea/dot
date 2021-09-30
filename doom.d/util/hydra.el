@@ -4,7 +4,7 @@
   "Kill"
   ("RET"     delete-other-windows   "Others" :exit t)
   ("<right>" (lambda ()
-               (interactive)
+x               (interactive)
                (save-excursion
                  (windmove-right)
                  (delete-window))) "Right"   :exit t)
@@ -30,10 +30,6 @@
                (interactive)
                (split-window-right)
                (windmove-right))         "Right" :exit t)
-  ("<left>"  (lambda ()
-               (interactive)
-               (split-window-left)
-               (windmove-left))          "Left"  :exit t)
   ("<down>"  (lambda ()
                (interactive)
                (split-window-vertically)

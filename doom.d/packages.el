@@ -6,3 +6,4 @@
 (package! paredit)
 (package! iedit)
 (package! helm-ag)
+(package! ag)
