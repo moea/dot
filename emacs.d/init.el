@@ -5,6 +5,7 @@
       require-final-newline              t
       mode-require-final-newline         t
       indent-tabs-mode                   nil
+      package-enable-at-startup          nil
       custom-safe-themes                 t
       confirm-nonexistent-file-or-buffer nil
       confirm-kill-emacs                 nil
@@ -190,21 +191,21 @@
   :ensure   t
   :straight t)
 
-(use-package spacemacs-theme
-  :ensure   t
-  :straight t
-  :config
-  (setq spacemacs-theme-comment-bg nil)
-  (setq spacemacs-theme-comment-italic t)
-  (load-theme 'spacemacs-dark)
-  (let ((line (face-attribute 'mode-line :underline)))
-    (set-face-attribute 'mode-line          nil :overline   line)
-    (set-face-attribute 'mode-line          nil :background "#59515E")
-    (set-face-attribute 'mode-line-inactive nil :overline   line)
-    (set-face-attribute 'mode-line-inactive nil :underline  line)
-    (set-face-attribute 'mode-line          nil :box        nil)
-    (set-face-attribute 'mode-line-inactive nil :box        nil)
-    (set-face-attribute 'mode-line-inactive nil :background "black")))
+;; (use-package spacemacs-theme
+;;   :ensure   t
+;;   :straight t
+;;   :config
+;;   (setq spacemacs-theme-comment-bg nil)
+;;   (setq spacemacs-theme-comment-italic t)
+;;   (load-theme 'spacemacs-dark)
+;;   (let ((line (face-attribute 'mode-line :underline)))
+;;     (set-face-attribute 'mode-line          nil :overline   line)
+;;     (set-face-attribute 'mode-line          nil :background "#59515E")
+;;     (set-face-attribute 'mode-line-inactive nil :overline   line)
+;;     (set-face-attribute 'mode-line-inactive nil :underline  line)
+;;     (set-face-attribute 'mode-line          nil :box        nil)
+;;     (set-face-attribute 'mode-line-inactive nil :box        nil)
+;;     (set-face-attribute 'mode-line-inactive nil :background "black")))
 
 (use-package moody
   :straight t
