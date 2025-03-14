@@ -14,6 +14,8 @@
       user-mail-address                  "moe.aboulkheir@gmail.com"
       moe/kill-save-buffer-delete-window nil
       allow-nested-minibuffers           t
+      backup-directory-alist             `((".*" . ,temporary-file-directory))
+      auto-save-file-name-transforms     `((".*" ,temporary-file-directory t))
       kill-buffer-query-functions        (delq 'process-kill-buffer-query-function
                                                kill-buffer-query-functions)
       custom-file                        (concat user-emacs-directory "custom.el"))
@@ -58,6 +60,7 @@
 
 (use-package paredit
   :init
+  (add-hook 'scheme-mode-hook     'paredit-mode)
   (add-hook 'clojure-mode-hook    'paredit-mode)
   (add-hook 'cider-repl-mode-hook 'paredit-mode)
   (add-hook 'emacs-lisp-mode-hook 'paredit-mode)
@@ -67,11 +70,21 @@
               ("C-M-f"      . moe/live-paredit-forward)
               ("C-)"        . moe/live-paredit-forward-slurp-sexp-neatly)))
 
+(use-package geiser-racket
+  :ensure   t
+  :straight t
+  :init (add-to-list 'auto-mode-alist '("\\.rkt\\'" . scheme-mode)))
+
+;; (use-package racket-mode
+;;   :ensure   t
+;;   :straight t)
+
 (use-package marginalia
   :ensure   t
   :straight t
   :init
   (marginalia-mode))
+
 
 (use-package fussy
   :ensure   t
@@ -83,9 +96,10 @@
    completion-category-overrides nil))
 
 (use-package consult
-  :ensure t
+  :ensure   t
   :straight t
   ;; Replace bindings. Lazily loaded due by `use-package'.
+  :init (require 'bind-key)
   :bind (;; C-c bindings in `mode-specific-map'
          ("C-c M-x" . consult-mode-command)
                                         ;("C-c h" . consult-history)
@@ -105,12 +119,11 @@
          ;; ("M-'" . consult-register-store) ;; orig. abbrev-prefix-mark (unrelated)
          ;; ("C-M-#" . consult-register)
          ;; ;; Other custom bindings
-         ;; ("M-y" . consult-yank-pop) ;; orig. yank-pop
-         ;; ;; M-g bindings in `goto-map'
+         ("M-y" . consult-yank-pop) ;; orig. yank-pop
+         ;; ;; M-g bindings in `goto-map' 02 38 52 53 70
          ;; ("M-g e" . consult-compile-error)
          ;; ("M-g f" . consult-flymake) ;; Alternative: consult-flycheck
          ("M-g g" . consult-goto-line)   ;; orig. goto-line
-         ("M-g M-g" . consult-goto-line) ;; orig. goto-line
          ;; ("M-g o" . consult-outline) ;; Alternative: consult-org-heading
          ;; ("M-g m" . consult-mark)
          ;; ("M-g k" . consult-global-mark)
@@ -150,13 +163,6 @@
 (use-package eldoc
   :diminish eldoc-mode)
 
-(use-package nlinum
-  :custom-face (linum ((t (:foreground "pink"))))
-  :ensure   t
-  :straight t
-  :config
-  (global-nlinum-mode 1))
-
 (use-package vertico
   :ensure t
   :straight t
@@ -184,6 +190,7 @@
 (use-package iedit
   :ensure t
   :straight t
+  :init (require 'bind-key)
   :bind ("C-M-;" . iedit-mode))
 
 (use-package
@@ -191,29 +198,11 @@
   :ensure   t
   :straight t)
 
-;; (use-package spacemacs-theme
-;;   :ensure   t
-;;   :straight t
-;;   :config
-;;   (setq spacemacs-theme-comment-bg nil)
-;;   (setq spacemacs-theme-comment-italic t)
-;;   (load-theme 'spacemacs-dark)
-;;   (let ((line (face-attribute 'mode-line :underline)))
-;;     (set-face-attribute 'mode-line          nil :overline   line)
-;;     (set-face-attribute 'mode-line          nil :background "#59515E")
-;;     (set-face-attribute 'mode-line-inactive nil :overline   line)
-;;     (set-face-attribute 'mode-line-inactive nil :underline  line)
-;;     (set-face-attribute 'mode-line          nil :box        nil)
-;;     (set-face-attribute 'mode-line-inactive nil :box        nil)
-;;     (set-face-attribute 'mode-line-inactive nil :background "black")))
-
-(use-package moody
+(use-package doom-modeline
+  :ensure   t
   :straight t
-  :config
-  (setq x-underline-at-descent-line t)
-  (moody-replace-mode-line-buffer-identification)
-  (moody-replace-vc-mode)
-  (moody-replace-eldoc-minibuffer-message-function))
+  :config (setq doom-modeline-icon nil)
+  :init (doom-modeline-mode 1))
 
 (use-package company
   :ensure   t
@@ -230,18 +219,39 @@
         recentf-save-file (concat user-emacs-directory ".recentf"))
   (recentf-mode t))
 
+;; (use-package pyenv-mode
+;;   :ensure   t
+;;   :straight t
+;;   :config (pyenv-mode))
+
 (use-package projectile
-:ensure   t
-:straight t
-:diminish projectile
-:init     (setq projectile-project-search-path '("~/p/"))
-:bind     ("C-p" . projectile-command-map)
-:config   (projectile-mode t))
+  :ensure   t
+  :straight t
+  :diminish projectile
+  :init
+  (require 'bind-key)
+  (setq projectile-project-search-path '("~/p/"))
+  ;; (add-hook 'projectile-after-switch-project-hook 'projectile-pyenv-mode-set)
+  :bind     ("C-p" . projectile-command-map)
+  :config   (projectile-mode t))
+
+;; (defun projectile-pyenv-mode-set ()
+;;   "Set pyenv version matching project name."
+;;   (let ((project (projectile-project-name)))
+;;     (if (member project (pyenv-mode-versions))
+;;         (pyenv-mode-set project)
+;;       (pyenv-mode-unset))))
 
 (use-package magit
   :ensure   t
   :straight t
-  :bind     ("C-x g" . magit-status))
+  :init     (require 'bind-key)
+  :bind     ("C-c g" . magit-status))
+
+(use-package which-key
+  :ensure   t
+  :straight t
+  :init (which-key-mode))
 
 (use-package whitespace
   :diminish global-whitespace-mode
@@ -251,21 +261,10 @@
   (add-hook 'before-save-hook 'whitespace-cleanup)
   :config   (global-whitespace-mode 1))
 
-(use-package helm
-  :disabled t
-  :ensure   t
-  :straight t
-  :diminish helm-mode
-  :bind (("C-x M-o" . helm-occur)
-         ("M-x"     . helm-M-x)
-         ("C-x C-f" . helm-find-files)
-         ("C-x C-r" . helm-recentf))
-  :config (helm-mode 1))
-
 (use-package clojure-mode
   :ensure   t
   :straight t
-  :mode (("\\.edn$" . clojure-mode))
+  :mode     (("\\.edn$" . clojure-mode))
   :init
   (setq clojure-indent-style            :always-align
         clojure-use-backtracking-indent t)
@@ -297,28 +296,15 @@
 
 (require 'vc)
 
-(defun pyrightconfig-write (virtualenv)
-  (interactive "DEnv: ")
-
-  (let* ((venv-dir (tramp-file-local-name (file-truename virtualenv)))
-         (venv-file-name (directory-file-name venv-dir))
-         (venvPath (file-name-directory venv-file-name))
-         (venv (file-name-base venv-file-name))
-         (base-dir (vc-call-backend (vc-responsible-backend venvPath) 'root venvPath))
-         (out-file (expand-file-name "pyrightconfig.json" base-dir))
-         (out-contents (json-encode (list :venvPath venvPath :venv venv))))
-
-    (with-temp-file out-file (insert out-contents))))
-
 (cl-defmethod project-root ((project (head eglot-project)))
   (cdr project))
 
-(defun my-project-try-tsconfig-json (dir)
+(defun moe/try-tsconfig-json (dir)
   (when-let* ((found (locate-dominating-file dir "tsconfig.json")))
     (cons 'eglot-project found)))
 
 (add-hook 'project-find-functions
-          'my-project-try-tsconfig-json nil nil)
+          'moe/try-tsconfig-json nil nil)
 
 (use-package coverlay
   :ensure   t
@@ -329,6 +315,8 @@
          (shell-command-to-string "$SHELL -i -l -c 'echo $PATH'")))
     (setenv "PATH" path-from-shell)
     (setq exec-path (split-string path-from-shell path-separator))))
+
+(load-theme 'ouch)
 
 (when window-system
   (set-exec-path-from-shell-PATH))
