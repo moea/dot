@@ -83,7 +83,7 @@
    completion-category-overrides nil))
 
 (use-package consult
-  :ensure t
+  :ensure   t
   :straight t
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings in `mode-specific-map'
@@ -105,8 +105,8 @@
          ;; ("M-'" . consult-register-store) ;; orig. abbrev-prefix-mark (unrelated)
          ;; ("C-M-#" . consult-register)
          ;; ;; Other custom bindings
-         ;; ("M-y" . consult-yank-pop) ;; orig. yank-pop
-         ;; ;; M-g bindings in `goto-map'
+         ("M-y" . consult-yank-pop) ;; orig. yank-pop
+         ;; ;; M-g bindings in `goto-map' 02 38 52 53 70
          ;; ("M-g e" . consult-compile-error)
          ;; ("M-g f" . consult-flymake) ;; Alternative: consult-flycheck
          ("M-g g" . consult-goto-line)   ;; orig. goto-line
@@ -157,6 +157,11 @@
   :config
   (global-nlinum-mode 1))
 
+(use-package which-key
+  :ensure   t
+  :straight t
+  :init (which-key-mode))
+
 (use-package vertico
   :ensure t
   :straight t
@@ -191,27 +196,13 @@
   :ensure   t
   :straight t)
 
-;; (use-package spacemacs-theme
-;;   :ensure   t
-;;   :straight t
-;;   :config
-;;   (setq spacemacs-theme-comment-bg nil)
-;;   (setq spacemacs-theme-comment-italic t)
-;;   (load-theme 'spacemacs-dark)
-;;   (let ((line (face-attribute 'mode-line :underline)))
-;;     (set-face-attribute 'mode-line          nil :overline   line)
-;;     (set-face-attribute 'mode-line          nil :background "#59515E")
-;;     (set-face-attribute 'mode-line-inactive nil :overline   line)
-;;     (set-face-attribute 'mode-line-inactive nil :underline  line)
-;;     (set-face-attribute 'mode-line          nil :box        nil)
-;;     (set-face-attribute 'mode-line-inactive nil :box        nil)
-;;     (set-face-attribute 'mode-line-inactive nil :background "black")))
-
 (use-package moody
+  :ensure   t
   :straight t
   :config
   (setq x-underline-at-descent-line t)
   (moody-replace-mode-line-buffer-identification)
+  (moody-replace-mode-line-front-space)
   (moody-replace-vc-mode)
   (moody-replace-eldoc-minibuffer-message-function))
 
@@ -230,18 +221,32 @@
         recentf-save-file (concat user-emacs-directory ".recentf"))
   (recentf-mode t))
 
+(use-package pyenv-mode
+  :ensure   t
+  :straight t
+  :config (pyenv-mode))
+
 (use-package projectile
-:ensure   t
-:straight t
-:diminish projectile
-:init     (setq projectile-project-search-path '("~/p/"))
-:bind     ("C-p" . projectile-command-map)
-:config   (projectile-mode t))
+  :ensure   t
+  :straight t
+  :diminish projectile
+  :init
+  (setq projectile-project-search-path '("~/p/"))
+  (add-hook 'projectile-after-switch-project-hook 'projectile-pyenv-mode-set)
+  :bind     ("C-p" . projectile-command-map)
+  :config   (projectile-mode t))
+
+(defun projectile-pyenv-mode-set ()
+  "Set pyenv version matching project name."
+  (let ((project (projectile-project-name)))
+    (if (member project (pyenv-mode-versions))
+        (pyenv-mode-set project)
+      (pyenv-mode-unset))))
 
 (use-package magit
   :ensure   t
   :straight t
-  :bind     ("C-x g" . magit-status))
+  :bind     ("C-c g" . magit-status))
 
 (use-package whitespace
   :diminish global-whitespace-mode
@@ -250,17 +255,6 @@
         '(face trailing tab-mark lines-tail empty))
   (add-hook 'before-save-hook 'whitespace-cleanup)
   :config   (global-whitespace-mode 1))
-
-(use-package helm
-  :disabled t
-  :ensure   t
-  :straight t
-  :diminish helm-mode
-  :bind (("C-x M-o" . helm-occur)
-         ("M-x"     . helm-M-x)
-         ("C-x C-f" . helm-find-files)
-         ("C-x C-r" . helm-recentf))
-  :config (helm-mode 1))
 
 (use-package clojure-mode
   :ensure   t
@@ -330,5 +324,7 @@
     (setenv "PATH" path-from-shell)
     (setq exec-path (split-string path-from-shell path-separator))))
 
-(when window-system
+(load-theme 'ouch)
+
+(when window-systemp
   (set-exec-path-from-shell-PATH))
